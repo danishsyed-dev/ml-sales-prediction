@@ -53,7 +53,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 CLIENT_A =  os.environ.get('CLIENT_A')
 API_ENDPOINT = os.environ.get('API_ENDPOINT')
-origins = ['http://localhost:3000', CLIENT_A, API_ENDPOINT]
+origins = [o for o in ['http://localhost:3000', CLIENT_A, API_ENDPOINT] if o is not None]
 
 
 # global variables
@@ -209,6 +209,16 @@ def load_artifacts_backup_model():
 
     try:
         main_logger.info('... loading gbm ...')
+        
+        # Try local file first
+        if os.environ.get('ENV') == 'local' and os.path.exists(GBM_FILE_PATH):
+            with open(GBM_FILE_PATH, 'rb') as f:
+                loaded_dict = pickle.load(f)
+                backup_model = loaded_dict['best_model']
+                main_logger.info("... successfully loaded gbm from local file ...")
+                return
+        
+        # Fall back to S3
         model_data_bytes_io = s3_load(file_path=GBM_FILE_PATH)
         if model_data_bytes_io:
             model_data_bytes_io.seek(0)
@@ -217,30 +227,28 @@ def load_artifacts_backup_model():
             main_logger.info("... successfully loaded gbm ...")
             return
 
-    except:
-        main_logger.error(f"failed to load gbm from s3 using pickle. try loading svr instead as a backup model.")
+    except Exception as e:
+        main_logger.error(f"failed to load gbm: {e}. try loading elastic net instead.")
         try:
-            main_logger.info('... loading svr ...')
-            model_data_bytes_io = s3_load(file_path=SVR_FILE_PATH)
+            main_logger.info('... loading en ...')
+            
+            # Try local file first
+            if os.environ.get('ENV') == 'local' and os.path.exists(EN_FILE_PATH):
+                with open(EN_FILE_PATH, 'rb') as f:
+                    loaded_dict = pickle.load(f)
+                    backup_model = loaded_dict['best_model']
+                    main_logger.info("... successfully loaded elastic net from local file ...")
+                    return
+            
+            model_data_bytes_io = s3_load(file_path=EN_FILE_PATH)
             if model_data_bytes_io:
                 model_data_bytes_io.seek(0)
                 loaded_dict = pickle.load(model_data_bytes_io)
                 backup_model = loaded_dict['best_model']
-                main_logger.info("... successfully loaded svr ...")
+                main_logger.info("... successfully loaded elastic net ...")
                 return
         except Exception as e:
-            main_logger.critical(f"failed to load svr from s3 using pickle. try loading elastic net instead as a backup model.")
-            try:
-                main_logger.info('... loading en ...')
-                model_data_bytes_io = s3_load(file_path=EN_FILE_PATH)
-                if model_data_bytes_io:
-                    model_data_bytes_io.seek(0)
-                    loaded_dict = pickle.load(model_data_bytes_io)
-                    backup_model = loaded_dict['best_model']
-                    main_logger.info("... successfully loaded elastic net ...")
-                    return
-            except Exception as e:
-                    main_logger.critical(f"failed to load backup model: {e}")
+                main_logger.critical(f"failed to load backup model: {e}")
 
 
 
@@ -331,12 +339,17 @@ def predict_price(stockcode):
         if X_test is not None:
             # create df
             price_range_df = pd.DataFrame({ 'unitprice': price_range })
-            test_sample = X_test.sample(n=1000, random_state=42) # type: ignore
-            test_sample_merged = test_sample.merge(price_range_df, how='cross') if X_test is not None else price_range_df
-            test_sample_merged.drop('unitprice_x', axis=1, inplace=True)
-            test_sample_merged.rename(columns={'unitprice_y': 'unitprice'}, inplace=True)
+            test_sample = X_test.sample(n=min(1000, len(X_test)), random_state=42) # type: ignore
+            test_sample_merged = test_sample.merge(price_range_df, how='cross')
+            
+            # Handle column renaming safely
+            if 'unitprice_x' in test_sample_merged.columns and 'unitprice_y' in test_sample_merged.columns:
+                test_sample_merged.drop('unitprice_x', axis=1, inplace=True)
+                test_sample_merged.rename(columns={'unitprice_y': 'unitprice'}, inplace=True)
 
-            X = preprocessor.transform(test_sample_merged) if preprocessor else test_sample_merged
+            # Select only numeric columns for prediction
+            numeric_cols = test_sample_merged.select_dtypes(include=['int64', 'float64', 'int32', 'float32']).columns.tolist()
+            X = test_sample_merged[numeric_cols].values
 
             # load model
             try: load_model(stockcode=stockcode)
@@ -361,12 +374,26 @@ def predict_price(stockcode):
                             main_logger.info(f"backup model's prediction for stockcode {stockcode} - actual quantity {y_pred_actual[0:5]}")
 
             elif backup_model:
-                try: input_dim = len(backup_model.feature_name_)
-                except: input_dim = len(backup_model.coef_)
-                if X.shape[1] > input_dim: X = X[:, : X.shape[1] - input_dim]
-                y_pred = backup_model.predict(X)
-                y_pred_actual = np.exp(y_pred + epsilon)
-                main_logger.info(f"backup model's prediction for stockcode {stockcode} -  actual quantity {y_pred_actual[0:5]}")
+                try:
+                    # Get the expected number of features from the model
+                    try: input_dim = len(backup_model.feature_name_)
+                    except: 
+                        try: input_dim = len(backup_model.coef_)
+                        except: input_dim = X.shape[1]
+                    
+                    # Adjust input dimensions if needed
+                    if X.shape[1] > input_dim:
+                        X = X[:, :input_dim]
+                    elif X.shape[1] < input_dim:
+                        # Pad with zeros if needed
+                        padding = np.zeros((X.shape[0], input_dim - X.shape[1]))
+                        X = np.hstack([X, padding])
+                    
+                    y_pred = backup_model.predict(X)
+                    y_pred_actual = np.exp(y_pred + epsilon)
+                    main_logger.info(f"backup model's prediction for stockcode {stockcode} - actual quantity {y_pred_actual[0:5]}")
+                except Exception as e:
+                    main_logger.error(f"Prediction error: {e}")
 
             if y_pred_actual is not None:
                 df_ = test_sample_merged.copy()
