@@ -11,15 +11,29 @@ from src._utils.log import main_logger
 
 def s3_upload(file_path: str):
     load_dotenv(override=True)
-    S3_BUCKET_NAME = os.environ.get('S3_BUCKET_NAME', 'ml-sales-pred')
-    s3_client = boto3.client('s3', region_name=os.environ.get('AWS_REGION_NAME', 'us-east-1'))
-
-    if s3_client:
-        s3_key = file_path if file_path[0] != '/' else file_path[1:]
-        s3_client.upload_file(file_path, S3_BUCKET_NAME, s3_key)
-        main_logger.info(f"file uploaded to s3://{S3_BUCKET_NAME}/{s3_key}")
-    else:
-        main_logger.error('failed to create an S3 client.')
+    
+    # Check if running locally without AWS
+    env_mode = os.environ.get('ENV', 'local')
+    aws_region = os.environ.get('AWS_REGION_NAME', '')
+    s3_bucket = os.environ.get('S3_BUCKET_NAME', '')
+    
+    if env_mode == 'local' and (not aws_region or not s3_bucket):
+        main_logger.info(f"Skipping S3 upload (running locally): {file_path}")
+        return
+    
+    try:
+        S3_BUCKET_NAME = s3_bucket or 'ml-sales-pred'
+        s3_client = boto3.client('s3', region_name=aws_region or 'us-east-1')
+        s3_client.list_buckets()  # Test connection
+        
+        if s3_client:
+            s3_key = file_path if file_path[0] != '/' else file_path[1:]
+            s3_client.upload_file(file_path, S3_BUCKET_NAME, s3_key)
+            main_logger.info(f"file uploaded to s3://{S3_BUCKET_NAME}/{s3_key}")
+        else:
+            main_logger.error('failed to create an S3 client.')
+    except Exception as e:
+        main_logger.info(f"S3 upload skipped (no AWS credentials): {file_path}")
 
 
 def _get_latest_s3_file_key(prefix=""):
