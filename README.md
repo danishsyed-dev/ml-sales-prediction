@@ -1,342 +1,278 @@
-# ML System for Price Prediction
+# 🛒 ML Sales Prediction System
 
 ![MIT license](https://img.shields.io/badge/License-MIT-green)
-![python ver](https://img.shields.io/badge/Python-3.12-purple)
-![pyenv ver](https://img.shields.io/badge/pyenv-2.5.0-orange)
+![Python](https://img.shields.io/badge/Python-3.12-blue)
+![Flask](https://img.shields.io/badge/Flask-3.1-red)
+![LightGBM](https://img.shields.io/badge/LightGBM-4.6-purple)
 
+A **Dynamic Pricing ML System** that predicts optimal prices for retail products to maximize sales revenue. Built with LightGBM, Flask, and a beautiful web UI.
 
+![UI Preview](https://img.shields.io/badge/UI-Available-brightgreen)
 
-**Visit**
+---
 
-- [User Interface]()
-- [Related Article]()
+## 🎯 What Does This Project Do?
 
+Given a product (identified by `stockcode`), this system predicts:
+- **How many units will sell** at different price points
+- **What is the optimal price** to maximize total revenue
 
-## Table of Content
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+### Business Question
+> *"If I price product X at $Y, how many will I sell and what's my revenue?"*
 
-- [Key Features](#key-features)
-- [The System Architecture](#the-system-architecture)
-- [Quick Start](#quick-start)
-  - [Installing the package manager](#installing-the-package-manager)
-  - [Installing dependencies](#installing-dependencies)
-  - [Adding env secrets to .env file](#adding-env-secrets-to-env-file)
-  - [Running API endpoints](#running-api-endpoints)
-- [Tuning](#tuning)
-  - [Feature engineering](#feature-engineering)
-  - [Model retraining](#model-retraining)
-  - [Tuning from scratch (with caution)](#tuning-from-scratch-with-caution)
-  - [Tuning for stockcode (with caution)](#tuning-for-stockcode-with-caution)
-- [Deployment](#deployment)
-  - [Publishing Docker image](#publishing-docker-image)
-  - [Connecting cache storage](#connecting-cache-storage)
-- [Package Management](#package-management)
-- [Contributing](#contributing)
-  - [Pre-commit hooks](#pre-commit-hooks)
-- [Trouble Shooting](#trouble-shooting)
-- [Ref. Repository Structure](#ref-repository-structure)
+---
 
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+## ✨ Key Features
 
-<hr />
+| Feature | Description |
+|---------|-------------|
+| 🤖 **ML Models** | LightGBM + ElasticNet ensemble for robust predictions |
+| 🌐 **REST API** | Flask-based API with CORS support |
+| 🎨 **Web UI** | Beautiful, responsive prediction interface |
+| 📊 **Visualizations** | Interactive charts showing price vs. sales curves |
+| 🚀 **Production Ready** | Docker support for AWS Lambda/SageMaker deployment |
+| ⚡ **Fast Inference** | ~1-2 seconds per prediction |
 
-## Key Features
+---
 
-A dynamic pricing system for an online retailer using predictions served by ML models:
+## 🏗️ System Architecture
 
-   - A multi-layered Feedforward Neural Network,
-
-   - A Light GBM regressor and
-
-   - An Elastic Net,
-
-hosted on the containerized serverless architecture.
-
-
-## The System Architecture
-
-<!-- Add your architecture diagram here -->
-
-<br>
-
-The system design focuses on the following points:
-
-- The application is fully containerized on **Docker** for universal accessibility.
-- The container image is stored in **Elastic Container Registry (ECR)**.
-- **API Gateway's REST API endpoints** trigger an event to invoke the Lambda function.
-- **Lambda function** loads the container image from ECR and perform inference.
-- Trained models, processors, and input features are stored in the **S3** buckets.
-- A **Redis client** caches analytical data and past prediction results stored in ElastiCache.
-
-<hr />
-
-## Quick Start
-
-### Installing the package manager
-
-For MacOS:
-
-```bash
-brew install uv
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Raw Data      │────→│  Data Pipeline  │────→│  Processed Data │
+│  (CSV/Excel)    │     │  (Engineering)  │     │   (Parquet)     │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                                        │
+                                                        ↓
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   Predictions   │←────│   Flask API     │←────│  ML Models      │
+│   (JSON/UI)     │     │   (Waitress)    │     │  (LightGBM)     │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
-For Ubuntu/Debian:
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Python 3.12
+- [uv](https://github.com/astral-sh/uv) package manager
+
+### Installation
 
 ```bash
-sudo apt-get install uv
-```
+# Clone the repository
+git clone https://github.com/danishsyed-dev/ml-sales-prediction.git
+cd ml-sales-prediction
 
+# Install uv (if not installed)
+pip install uv
 
-### Installing dependencies
-
-```bash
-uv venv
-source .venv/bin/activate
-uv lock --upgrade
+# Create virtual environment and install dependencies
+uv venv --python 3.12
 uv sync
+
+# Setup environment variables
+cp .env.sample .env
+# Edit .env with your settings (for local development, defaults work fine)
 ```
 
-or
+### Running the Application
 
 ```bash
-pip env
-pip install -r requirements.txt
+# Start the API server
+uv run app.py
 ```
 
-- AssertionError/module mismatch errors: Set up the default Python version using `.pyenv`
+The application will be available at:
+- **API**: http://localhost:5002/
+- **Web UI**: http://localhost:5002/ui
+
+---
+
+## 🌐 API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/` | GET | Health check / Home |
+| `/ui` | GET | **Web Interface** - Interactive prediction UI |
+| `/v1/predict-price/{stockcode}` | GET | **Prediction API** - Get price predictions |
+| `/ping` | GET | Health check (SageMaker) |
+
+### Prediction API Example
 
 ```bash
-pyenv install 3.12.8
-pyenv global 3.12.8  (optional: `pyenv global system` to get back to the system default ver.)
-uv python pin 3.12.8
-echo 3.12.8 >> .python-version
+# Basic prediction
+curl http://localhost:5002/v1/predict-price/85123A
+
+# With parameters
+curl "http://localhost:5002/v1/predict-price/85123A?unitprice_min=5&unitprice_max=25&num_price_bins=100"
 ```
 
+### Query Parameters
 
-### Adding env secrets to .env file
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `unitprice_min` | float | Auto | Minimum price to test |
+| `unitprice_max` | float | Auto | Maximum price to test |
+| `num_price_bins` | int | 100 | Number of price points to evaluate |
 
-Create `.env` file in the project root and add secret vars following `.env.sample` file.
+### Response Format
 
-
-### Running API endpoints
-
-```bash
-uv run app.py --cache-clear
+```json
+[
+  {
+    "stockcode": "85123A",
+    "unit_price": 2.0,
+    "quantity": 349,
+    "quantity_min": 155,
+    "quantity_max": 1548,
+    "predicted_sales": 699.0,
+    "optimal_unit_price": 20.0,
+    "max_predicted_sales": 6990.0
+  }
+]
 ```
 
-The API is available at `http://localhost:5002`.
+---
 
+## 🎨 Web UI
 
-<hr />
+Access the beautiful web interface at **http://localhost:5002/ui**
 
+### Features:
+- 📝 **Input Form**: Enter stock code and price range
+- 📊 **Interactive Chart**: Visualize price vs. predicted sales
+- 📈 **Summary Cards**: View optimal price and max revenue
+- 📋 **Results Table**: Top 10 predictions sorted by sales
 
-## Tuning
+---
 
-### Feature engineering
-
-- The `data_handling` folder contains data relerated scripts.
-
-- After updating scripts, run:
-
-```bash
-uv run src/data_handling/main.py
-```
-
-
-### Model retraining
-
-- The retrain script will load the serialized model in the model store, then retrain with new data, and upload the retrained model to the model store.
-
-```bash
-uv run src/retrain.py
-```
-
-
-### Tuning from scratch (with caution)
-
-- The main script will run feature engineering and model tuning from scratch, and update instances saved in model store and feature store in S3.
-
-```bash
-uv run src/main.py
-```
-
-- Before running the script, make sure testing the new script in notebook.
-
-### Tuning for stockcode (with caution)
-
-- Run the main script for stockcode to tune the model based on training data of specific stockcode.
-
-```bash
-uv run src/main_stockcode.py {STOCKCODE} --cache-clear
-```
-
-## Deployment
-
-### Publishing Docker image
-
-- Build and run Docker image:
-
-```bash
-docker build -t <APP NAME> .
-docker run -p 5002:5002 -e ENV=local <APP NAME> app.py
-```
-
-Replace `<APP NAME>` with an app name of your choice.
-
-
-- Push the Dokcer image to AWS Elastic Container Registory (ECR)
-
-```bash
-# tagging
-docker tag <YOUR ECR NAME>:<YOUR ECR VERSION> <URI>.dkr.ecr.<REGION>.amazonaws.com/<ECR NAME>:<VERSION>
-
-# push to the ECR
-docker push <URI>.dkr.ecr.<REGION>.amazonaws.com/<ECR NAME>:<VERSION>
-```
-
-
-### Connecting cache storage
-
-- Cache storage (ElastiCache) run on Redis engine.
-
-- To test the connection locally:
-
-```bash
-redis-cli --tls -h clustercfg.{REDIS_CLUSTER}.cache.amazonaws.com -p 6379 -c
-```
-
-- To flush all caches (WITH CAUTION):
-
-```bash
-redis-cli -h clustercfg.{REDIS_CLUSTER}.cache.amazonaws.com -p 6379 --tls
-
-# once connected, flush all data
-FLUSHALL
-
-# or flush specific database (if using multiple databases)
-FLUSHDB
-```
-
-<hr />
-
-
-## Package Management
-
-- Add a package: `uv add <package>`
-- Remove a package: `uv remove <package>`
-- Run a command in the virtual environment: `uv run <command>`
-- To completely refresh the environement, run the following commands:
-
-```bash
-rm -rf .venv
-rm -rf uv.lock
-uv cache clean
-uv venv
-source .venv/bin/activate
-uv sync
-```
-
-<hr />
-
-
-## Contributing
-
-
-1. Create your feature branch (`git checkout -b feature/your-amazing-feature`)
-
-2. Create a feature.
-
-3. Pull the latest version of source code from the main branch (`git pull origin main`) *Address conflicts if any.
-
-4. Commit your changes (`git add .` / `git commit -m 'Add your-amazing-feature'`)
-
-5. Push to the branch (`git push origin feature/your-amazing-feature`)
-
-6. Open a pull request
-
-* Flag `#REFINEME` for any improvement needed and `#FIXME` for any errors.
-
-
-### Pre-commit hooks
-
-Pre-commit hooks runs hooks defined in the `pre-commit-config.yaml` file before every commit.
-
-To activate the hooks:
-
-1. Install pre-commit hooks:
-
-```bash
-uv run pre-commit install
-```
-
-2. Run pre-commit checks manually:
-
-```bash
-uv run pre-commit run --all-files
-```
-
-Pre-commit hooks help maintain code quality by running checks for formatting, linting, and other issues before each commit.
-
-* To skip pre-commit hooks
-
-```bash
-git commit --no-verify -m "your-commit-message"
-```
-
-
-<hr />
-
-## Trouble Shooting
-
-Common issues and solutions:
-
-* API key errors: Ensure all API keys in the `.env` file are correct and up to date. Make sure to add `load_dotenv()` on the top of the python file to apply the latest environment values.
-
-* Data warehouse connection issues: Check logs on AWS consoles, CloudWatch. Check if `.env` and Lambda's environment configuration are correct.
-
-* Memory errors: If processing large contracts, you may need to increase the available memory for the Python process.
-
-
-* Issues related to `Python quit unexpectedly`: Check [this stackoverflow article](https://stackoverflow.com/questions/59888499/macos-catalina-python-quit-unexpectedly-error).
-
-* `reportMissingImports` error from pyright after installing the package: This might occur when installing new libraries while VSCode is running. Open the command pallete (ctrl + shift + p) and run the Python: Restart language server task.
-
-<hr >
-
-## Ref. Repository Structure
+## 📁 Project Structure
 
 ```
-.
-.venv/                  [.gitignore]    # stores uv venv
+ml-sales-prediction/
 │
-└── data/               [.gitignore]
-│     └──raw/                           # stores raw data
-│     └──preprocessed/                  # stores processed data after imputation and engineering
+├── 📄 app.py                    # Flask API server (entry point)
+├── 📄 pyproject.toml            # Project configuration
+├── 📄 requirements.txt          # Dependencies
 │
-└── models/             [.gitignore]    # stores serialized model after training and tuning
-│     └──dfn/                           # deep feedforward network
-│     └──gbm/                           # light gbm
-│     └──en/                            # elastic net
-│     └──production/                    # models to be stored in S3 for production use
-|
-└── notebooks/                          # stores experimentation notebooks
+├── 📂 src/                      # Source code
+│   ├── main.py                  # Full training script
+│   ├── main_fast.py             # Fast training (LightGBM + EN)
+│   ├── data_handling/           # Data processing pipeline
+│   └── model/                   # ML model implementations
+│       ├── sklearn_model/       # LightGBM, ElasticNet
+│       ├── torch_model/         # PyTorch neural network
+│       └── keras_model/         # TensorFlow models
 │
-└── src/                                # core functions
-│     └──_utils/                        # utility functions
-│     └──data_handling/                 # functions to engineer features
-│     └──model/                         # functions to train, tune, validate models
-│     │     └── sklearn_model
-│     │     └── torch_model
-│     │     └── ...
-│     └──main.py                        # main script to run the inference locally
+├── 📂 templates/                # HTML templates
+│   └── ui.html                  # Web UI
 │
-└──app.py                               # Flask application (API endpoints)
-└──pyproject.toml                       # project configuration
-└──.env                [.gitignore]     # environment variables
-└──uv.lock                              # dependency locking
-└──Dockerfile                           # for Docker container image
-└──.dockerignore
-└──requirements.txt
-└──.python-version                      # python version locking (3.12)
+├── 📂 static/                   # Static assets
+│   ├── ui.css                   # Styles
+│   └── ui.js                    # JavaScript
+│
+├── 📂 data/                     # Data files (gitignored)
+├── 📂 models/                   # Trained models (gitignored)
+├── 📂 notebooks/                # Jupyter experiments
+│
+└── 📂 Dockerfiles               # Deployment configs
 ```
+
+---
+
+## 🤖 Machine Learning Models
+
+| Model | Type | Performance (R²) | Use |
+|-------|------|-----------------|-----|
+| **LightGBM** | Gradient Boosting | 0.4717 | Primary |
+| **ElasticNet** | Linear Regression | 0.2649 | Backup |
+
+### Dataset
+- **Source**: [UCI Online Retail Dataset](https://archive.ics.uci.edu/ml/datasets/online+retail)
+- **Records**: 541,909 transactions
+- **Period**: 2010-2011
+
+---
+
+## 🔧 Development Commands
+
+| Task | Command |
+|------|---------|
+| **Run API** | `uv run app.py` |
+| **Train Models (Fast)** | `uv run src/main_fast.py` |
+| **Train All Models** | `uv run src/main.py` |
+| **Process Data** | `uv run src/data_handling/main.py` |
+| **Add Package** | `uv add <package>` |
+| **Run Pre-commit** | `uv run pre-commit run --all-files` |
+
+---
+
+## 🐳 Docker Deployment
+
+```bash
+# Build Docker image
+docker build -t ml-sales-prediction -f Dockerfile.lambda .
+
+# Run container
+docker run -p 5002:5002 -e ENV=local ml-sales-prediction
+```
+
+### Deployment Options
+- **AWS Lambda** - `Dockerfile.lambda`
+- **AWS SageMaker** - `Dockerfile.sagemaker`
+
+---
+
+## 📊 Sample Stock Codes
+
+| StockCode | Description |
+|-----------|-------------|
+| `85123A` | WHITE HANGING HEART T-LIGHT HOLDER |
+| `22423` | REGENCY CAKESTAND 3 TIER |
+| `85099B` | JUMBO BAG RED RETROSPOT |
+| `84879` | ASSORTED COLOUR BIRD ORNAMENT |
+
+---
+
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| **Language** | Python 3.12 |
+| **API Framework** | Flask + Waitress |
+| **ML Libraries** | LightGBM, Scikit-learn, PyTorch |
+| **Data Processing** | Pandas, NumPy |
+| **Package Manager** | uv |
+| **Caching** | Redis (optional) |
+| **Cloud** | AWS (S3, Lambda, ECR) |
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- UCI Machine Learning Repository for the Online Retail Dataset
+- LightGBM team for the excellent gradient boosting library
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/danishsyed-dev">Danish Syed</a>
+</p>

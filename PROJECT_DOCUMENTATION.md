@@ -76,6 +76,13 @@ ml-sales-prediction/
 │       ├── log.py               # Logging configuration
 │       └── s3.py                # AWS S3 operations
 │
+├── 📂 templates/                # HTML templates
+│   └── ui.html                  # Web UI for predictions
+│
+├── 📂 static/                   # Static assets
+│   ├── ui.css                   # Styles (IBM Plex Serif, Space Grotesk)
+│   └── ui.js                    # JavaScript (charts, forms, validation)
+│
 ├── 📂 data/                     # Data files (gitignored)
 │   ├── 📂 raw/                  # Raw data (online_retail.csv)
 │   ├── 📂 processed/            # Processed data
@@ -230,13 +237,29 @@ Response:
 <p>Hello, world</p><p>I am an API endpoint.</p>
 ```
 
-#### 2. Health Check
+#### 2. Web UI ⭐ (Interactive Interface)
+```
+GET /ui
+```
+Opens the beautiful web interface with:
+- 📝 **Input Form**: Enter stock code and price range
+- 📊 **Interactive Chart**: Visualize price vs. predicted sales
+- 📈 **Summary Cards**: View optimal price and max revenue
+- 📋 **Results Table**: Top 10 predictions sorted by sales
+
+Features:
+- Premium fonts (IBM Plex Serif, Space Grotesk)
+- Responsive design for mobile and desktop
+- Real-time form validation
+- SVG chart rendering
+
+#### 3. Health Check
 ```
 GET /ping
 ```
 Response: `200 OK` (empty)
 
-#### 3. Price Prediction ⭐ (Main Endpoint)
+#### 4. Price Prediction ⭐ (Main API Endpoint)
 ```
 GET /v1/predict-price/{stockcode}
 ```
@@ -484,4 +507,5 @@ MIT License
 ---
 
 *Documentation generated for ml-sales-prediction project*
-*Last updated: January 12, 2026*
+*Last updated: February 5, 2026*
+

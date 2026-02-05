@@ -1,13 +1,19 @@
 [project]
-name = "src"
-version = "0.1.0"
-authors = [{ name = "Danish", email = "" }]
-description = "sales prediction"
+name = "ml-sales-prediction"
+version = "1.0.0"
+authors = [{ name = "Danish Syed", email = "" }]
+description = "Dynamic Pricing ML System - Predicts optimal prices for retail products using LightGBM and ElasticNet"
 readme = "README.md"
 requires-python = "==3.12.*"
 license = {file = "LICENSE"}
-keywords = ["machine learning", 'deep learning']
-classifiers = ["Programming Language :: Python"]
+keywords = ["machine learning", "deep learning", "sales prediction", "dynamic pricing", "lightgbm", "flask"]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Framework :: Flask",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "aws-wsgi>=0.2.7",
     "boto3>=1.39.17",
@@ -28,9 +34,9 @@ dependencies = [
 ]
 
 [project.urls]
-# Homepage = ""
-# Repository = ""
-# Issues = ""
+Homepage = "https://github.com/danishsyed-dev/ml-sales-prediction"
+Repository = "https://github.com/danishsyed-dev/ml-sales-prediction"
+Issues = "https://github.com/danishsyed-dev/ml-sales-prediction/issues"
 
 [project.optional-dependencies]
 
