@@ -14,7 +14,7 @@ import joblib # type: ignore
 import redis # type: ignore
 import redis.cluster # type: ignore
 from redis.cluster import ClusterNode # type: ignore
-from flask import Flask, request, jsonify # type: ignore
+from flask import Flask, request, jsonify, render_template # type: ignore
 from flask_cors import cross_origin
 from waitress import serve
 from dotenv import load_dotenv # type: ignore
@@ -261,6 +261,11 @@ def hello_world():
     data = request.json if request.is_json else request.data.decode('utf-8')
     main_logger.info(f"request received! ENV: {env}, Data: {data}")
     return jsonify({"message": f"Hello from Flask in Lambda! ENV: {env}", "received_data": data})
+
+
+@app.route('/ui', methods=['GET'])
+def ui():
+    return render_template('ui.html')
 
 
 @app.route('/v1/predict-price/<string:stockcode>', methods=['GET', 'OPTIONS'])
