@@ -527,6 +527,61 @@ wheels = [
 ]
 
 [[package]]
+name = "ml-sales-prediction"
+version = "1.0.0"
+source = { editable = "." }
+dependencies = [
+    { name = "aws-wsgi" },
+    { name = "boto3" },
+    { name = "category-encoders" },
+    { name = "flask" },
+    { name = "flask-cors" },
+    { name = "lightgbm" },
+    { name = "numpy" },
+    { name = "openpyxl" },
+    { name = "optuna" },
+    { name = "pandas" },
+    { name = "python-dotenv" },
+    { name = "redis" },
+    { name = "scikit-optimize" },
+    { name = "tensorflow" },
+    { name = "torch" },
+    { name = "waitress" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "fastparquet" },
+    { name = "pyarrow" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aws-wsgi", specifier = ">=0.2.7" },
+    { name = "boto3", specifier = ">=1.39.17" },
+    { name = "category-encoders", specifier = ">=2.8.1" },
+    { name = "flask", specifier = ">=3.1.1" },
+    { name = "flask-cors", specifier = ">=6.0.1" },
+    { name = "lightgbm", specifier = ">=4.6.0" },
+    { name = "numpy", specifier = ">=2.1.3" },
+    { name = "openpyxl", specifier = ">=3.1.5" },
+    { name = "optuna", specifier = ">=4.4.0" },
+    { name = "pandas", specifier = ">=2.3.1" },
+    { name = "python-dotenv", specifier = ">=1.1.1" },
+    { name = "redis", specifier = ">=6.2.0" },
+    { name = "scikit-optimize", specifier = ">=0.10.2" },
+    { name = "tensorflow", specifier = ">=2.19.0" },
+    { name = "torch", specifier = ">=2.7.1" },
+    { name = "waitress", specifier = ">=3.0.2" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "fastparquet", specifier = ">=2024.11.0" },
+    { name = "pyarrow", specifier = ">=21.0.0" },
+]
+
+[[package]]
 name = "mpmath"
 version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1058,61 +1113,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/a2/3a11b06715149bf3310b55a98b5c1e84a42cfb949a7b800bc75cb4e33abc/sqlalchemy-2.0.43-cp312-cp312-win32.whl", hash = "sha256:b535d35dea8bbb8195e7e2b40059e2253acb2b7579b73c1b432a35363694641d", size = 2098906, upload-time = "2025-08-11T15:55:00.645Z" },
     { url = "https://files.pythonhosted.org/packages/bc/09/405c915a974814b90aa591280623adc6ad6b322f61fd5cff80aeaef216c9/sqlalchemy-2.0.43-cp312-cp312-win_amd64.whl", hash = "sha256:1c6d85327ca688dbae7e2b06d7d84cfe4f3fffa5b5f9e21bb6ce9d0e1a0e0e0a", size = 2126260, upload-time = "2025-08-11T15:55:02.965Z" },
     { url = "https://files.pythonhosted.org/packages/b8/d9/13bdde6521f322861fab67473cec4b1cc8999f3871953531cf61945fad92/sqlalchemy-2.0.43-py3-none-any.whl", hash = "sha256:1681c21dd2ccee222c2fe0bef671d1aef7c504087c9c4e800371cfcc8ac966fc", size = 1924759, upload-time = "2025-08-11T15:39:53.024Z" },
-]
-
-[[package]]
-name = "src"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "aws-wsgi" },
-    { name = "boto3" },
-    { name = "category-encoders" },
-    { name = "flask" },
-    { name = "flask-cors" },
-    { name = "lightgbm" },
-    { name = "numpy" },
-    { name = "openpyxl" },
-    { name = "optuna" },
-    { name = "pandas" },
-    { name = "python-dotenv" },
-    { name = "redis" },
-    { name = "scikit-optimize" },
-    { name = "tensorflow" },
-    { name = "torch" },
-    { name = "waitress" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "fastparquet" },
-    { name = "pyarrow" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aws-wsgi", specifier = ">=0.2.7" },
-    { name = "boto3", specifier = ">=1.39.17" },
-    { name = "category-encoders", specifier = ">=2.8.1" },
-    { name = "flask", specifier = ">=3.1.1" },
-    { name = "flask-cors", specifier = ">=6.0.1" },
-    { name = "lightgbm", specifier = ">=4.6.0" },
-    { name = "numpy", specifier = ">=2.1.3" },
-    { name = "openpyxl", specifier = ">=3.1.5" },
-    { name = "optuna", specifier = ">=4.4.0" },
-    { name = "pandas", specifier = ">=2.3.1" },
-    { name = "python-dotenv", specifier = ">=1.1.1" },
-    { name = "redis", specifier = ">=6.2.0" },
-    { name = "scikit-optimize", specifier = ">=0.10.2" },
-    { name = "tensorflow", specifier = ">=2.19.0" },
-    { name = "torch", specifier = ">=2.7.1" },
-    { name = "waitress", specifier = ">=3.0.2" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "fastparquet", specifier = ">=2024.11.0" },
-    { name = "pyarrow", specifier = ">=21.0.0" },
 ]
 
 [[package]]

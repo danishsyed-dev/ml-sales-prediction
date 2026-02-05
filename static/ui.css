@@ -20,7 +20,7 @@ body {
   margin: 0;
   font-family: "IBM Plex Serif", "Georgia", serif;
   color: var(--text);
-  background: radial-gradient(circle at top left, #f9f4ec, #efe7dc 45%, #f7f2ea 100%);
+  background: radial-gradient(circle at top left, #d4a058, #efe7dc 45%, #f7f2ea 100%);
   min-height: 100vh;
 }
 
