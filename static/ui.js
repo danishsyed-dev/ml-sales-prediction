@@ -29,8 +29,13 @@ const formatNumber = (value) => {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
 };
 
-const setStatus = (text) => {
+const setStatus = (text, isLoading = false) => {
   statusEl.textContent = text;
+  if (isLoading) {
+    statusEl.classList.add("status--loading");
+  } else {
+    statusEl.classList.remove("status--loading");
+  }
 };
 
 const clearErrors = () => {
@@ -202,7 +207,9 @@ form.addEventListener("submit", async (event) => {
   if (unitpriceMax) params.set("unitprice_max", unitpriceMax);
   if (numPriceBins) params.set("num_price_bins", numPriceBins);
 
-  setStatus("Running...");
+  setStatus("Running prediction...", true);
+  const submitButton = form.querySelector(".button");
+  submitButton.disabled = true;
 
   try {
     const response = await fetch(`/v1/predict-price/${encodeURIComponent(stockcode)}?${params.toString()}`);
@@ -218,13 +225,15 @@ form.addEventListener("submit", async (event) => {
     renderTable(sortedRows.slice(0, 10));
     renderChart(rows);
 
-    setStatus(`Done. Stockcode ${stockcode}`);
+    setStatus(`✓ Complete — ${stockcode}`, false);
   } catch (error) {
     console.error(error);
-    setStatus("Error running prediction");
-    showErrors(["The API request failed. Check the server logs and try again."]);
+    setStatus("✗ Error occurred", false);
+    showErrors(["The API request failed. Please check the server logs and try again."]);
     updateSummary([]);
     renderTable([]);
     renderChart([]);
+  } finally {
+    submitButton.disabled = false;
   }
 });

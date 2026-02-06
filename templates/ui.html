@@ -3,33 +3,43 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Sales Prediction UI</title>
+    <meta name="description" content="ML Sales Prediction - Explore predicted sales across price ranges for stock codes" />
+    <meta name="theme-color" content="#3b82f6" />
+    <title>Sales Prediction | ML Dashboard</title>
     <link rel="stylesheet" href="/static/ui.css" />
   </head>
   <body>
     <main class="page">
-      <section class="hero">
-        <div class="hero__badge">ML Sales Prediction</div>
-        <h1 class="hero__title">Price vs. Predicted Sales</h1>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__badge">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+            <path d="M2 17l10 5 10-5"></path>
+            <path d="M2 12l10 5 10-5"></path>
+          </svg>
+          ML Sales Prediction
+        </div>
+        <h1 id="hero-title" class="hero__title">Price vs. Predicted Sales</h1>
         <p class="hero__sub">
-          Explore predicted sales across a price range for a specific stock code.
-          This UI talks directly to the local Flask API.
+          Explore predicted sales across a price range for a specific stock code. 
+          Enter your parameters below to generate predictions using our machine learning model.
         </p>
       </section>
 
-      <section class="panel">
-        <form id="predict-form" class="form">
+      <section class="panel" aria-labelledby="form-heading">
+        <h2 id="form-heading" class="visually-hidden">Prediction Parameters</h2>
+        <form id="predict-form" class="form" novalidate>
           <div class="form__row">
             <label class="field">
               <span class="field__label">Stock Code</span>
-              <input id="stockcode" class="field__input" type="text" placeholder="85123A" />
+              <input id="stockcode" class="field__input" type="text" placeholder="e.g., 85123A" autocomplete="off" required />
             </label>
             <label class="field">
-              <span class="field__label">Min Unit Price</span>
+              <span class="field__label">Min Unit Price ($)</span>
               <input id="unitprice_min" class="field__input" type="number" min="0" step="0.01" placeholder="2.00" />
             </label>
             <label class="field">
-              <span class="field__label">Max Unit Price</span>
+              <span class="field__label">Max Unit Price ($)</span>
               <input id="unitprice_max" class="field__input" type="number" min="0" step="0.01" placeholder="20.00" />
             </label>
             <label class="field">
@@ -39,39 +49,43 @@
           </div>
 
           <div class="form__actions">
-            <button class="button" type="submit">Run Prediction</button>
-            <span id="status" class="status">Idle</span>
+            <button class="button" type="submit">
+              <span>Run Prediction</span>
+            </button>
+            <span id="status" class="status" role="status" aria-live="polite">Ready</span>
           </div>
-          <div id="error-box" class="error-box" role="alert" aria-live="polite" hidden>
-            <div class="error-box__title">Please fix the highlighted fields</div>
+          <div id="error-box" class="error-box" role="alert" aria-live="assertive" hidden>
+            <div class="error-box__title">⚠️ Please fix the following issues:</div>
             <ul id="error-list" class="error-box__list"></ul>
           </div>
         </form>
       </section>
 
-      <section class="results">
-        <div class="summary">
+      <section class="results" aria-labelledby="results-heading">
+        <h2 id="results-heading" class="visually-hidden">Prediction Results</h2>
+        
+        <div class="summary" role="region" aria-label="Summary statistics">
           <div class="summary__card">
             <div class="summary__label">Optimal Unit Price</div>
-            <div id="optimal_price" class="summary__value">—</div>
+            <div id="optimal_price" class="summary__value" aria-label="Optimal price value">—</div>
           </div>
           <div class="summary__card">
             <div class="summary__label">Max Predicted Sales</div>
-            <div id="max_sales" class="summary__value">—</div>
+            <div id="max_sales" class="summary__value" aria-label="Maximum sales value">—</div>
           </div>
           <div class="summary__card">
             <div class="summary__label">Rows Returned</div>
-            <div id="rows_returned" class="summary__value">0</div>
+            <div id="rows_returned" class="summary__value" aria-label="Number of rows">0</div>
           </div>
         </div>
 
         <div class="chart-panel">
           <div class="chart-panel__header">
-            <h2 class="chart-panel__title">Prediction Curve</h2>
-            <p class="chart-panel__subtitle">Unit price vs. predicted sales</p>
+            <h2 class="chart-panel__title">📈 Prediction Curve</h2>
+            <p class="chart-panel__subtitle">Visual representation of unit price vs. predicted sales</p>
           </div>
           <div class="chart-panel__body">
-            <svg id="chart" viewBox="0 0 800 300" role="img" aria-label="Prediction chart">
+            <svg id="chart" viewBox="0 0 800 300" role="img" aria-label="Line chart showing price vs predicted sales relationship" preserveAspectRatio="xMidYMid meet">
               <rect x="0" y="0" width="800" height="300" class="chart__bg"></rect>
               <g id="chart-grid"></g>
               <polyline id="chart-line" class="chart__line" points=""></polyline>
@@ -82,21 +96,21 @@
 
         <div class="table-panel">
           <div class="table-panel__header">
-            <h2 class="table-panel__title">Top Predicted Sales</h2>
-            <p class="table-panel__subtitle">Sorted by predicted sales (top 10)</p>
+            <h2 class="table-panel__title">📊 Top Predicted Sales</h2>
+            <p class="table-panel__subtitle">Top 10 results sorted by predicted sales (highest first)</p>
           </div>
           <div class="table-panel__body">
             <table class="table">
               <thead>
                 <tr>
-                  <th>Unit Price</th>
-                  <th>Quantity (Median)</th>
-                  <th>Predicted Sales</th>
+                  <th scope="col">Unit Price</th>
+                  <th scope="col">Quantity (Median)</th>
+                  <th scope="col">Predicted Sales</th>
                 </tr>
               </thead>
               <tbody id="table-body">
                 <tr>
-                  <td colspan="3" class="table__empty">Run a prediction to see results.</td>
+                  <td colspan="3" class="table__empty">Run a prediction to see results</td>
                 </tr>
               </tbody>
             </table>
@@ -108,6 +122,20 @@
     <footer class="footer">
       <span>API endpoint: <code>/v1/predict-price/&lt;stockcode&gt;</code></span>
     </footer>
+
+    <style>
+      .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+    </style>
 
     <script src="/static/ui.js"></script>
   </body>
