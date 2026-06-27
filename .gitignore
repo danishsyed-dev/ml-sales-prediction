@@ -78,3 +78,7 @@ online+retail.zip
 *.psd
 *.pdf
 *.png
+
+# Generated Documentation
+PROJECT_KNOWLEDGE_BASE.md
+
