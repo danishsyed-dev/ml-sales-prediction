@@ -145,7 +145,10 @@ const renderChart = (rows) => {
 
   const width = 800;
   const height = 300;
-  const padding = 40;
+  const paddingLeft = 75;
+  const paddingRight = 30;
+  const paddingTop = 20;
+  const paddingBottom = 45;
 
   const prices = rows.map((row) => row.unit_price);
   const sales = rows.map((row) => row.predicted_sales);
@@ -156,20 +159,52 @@ const renderChart = (rows) => {
   const maxY = Math.max(...sales);
 
   const scaleX = (value) =>
-    padding + ((value - minX) / (maxX - minX || 1)) * (width - padding * 2);
+    paddingLeft + ((value - minX) / (maxX - minX || 1)) * (width - paddingLeft - paddingRight);
   const scaleY = (value) =>
-    height - padding - ((value - minY) / (maxY - minY || 1)) * (height - padding * 2);
+    height - paddingBottom - ((value - minY) / (maxY - minY || 1)) * (height - paddingTop - paddingBottom);
 
   const gridLines = 5;
   for (let i = 0; i <= gridLines; i += 1) {
-    const y = padding + (i / gridLines) * (height - padding * 2);
+    const y = paddingTop + (i / gridLines) * (height - paddingTop - paddingBottom);
+    
+    // Grid line
     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-    line.setAttribute("x1", padding);
-    line.setAttribute("x2", width - padding);
+    line.setAttribute("x1", paddingLeft);
+    line.setAttribute("x2", width - paddingRight);
     line.setAttribute("y1", y);
     line.setAttribute("y2", y);
     line.setAttribute("class", "chart__grid");
     chartGrid.appendChild(line);
+
+    // Y-axis label value
+    const valueY = maxY - (i / gridLines) * (maxY - minY);
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", paddingLeft - 10);
+    text.setAttribute("y", y + 3.5);
+    text.setAttribute("text-anchor", "end");
+    text.setAttribute("font-size", "10px");
+    text.setAttribute("fill", "var(--text-secondary)");
+    text.setAttribute("font-family", "var(--font-sans)");
+    text.textContent = formatCurrency(valueY);
+    chartGrid.appendChild(text);
+  }
+
+  // Add X-axis label values
+  const xLabelsCount = 5;
+  for (let i = 0; i <= xLabelsCount; i += 1) {
+    const fraction = i / xLabelsCount;
+    const x = paddingLeft + fraction * (width - paddingLeft - paddingRight);
+    const valueX = minX + fraction * (maxX - minX);
+    
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("x", x);
+    text.setAttribute("y", height - paddingBottom + 18);
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("font-size", "10px");
+    text.setAttribute("fill", "var(--text-secondary)");
+    text.setAttribute("font-family", "var(--font-sans)");
+    text.textContent = formatCurrency(valueX);
+    chartGrid.appendChild(text);
   }
 
   const points = rows

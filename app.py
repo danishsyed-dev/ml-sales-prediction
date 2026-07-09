@@ -352,9 +352,19 @@ def predict_price(stockcode):
                 test_sample_merged.drop('unitprice_x', axis=1, inplace=True)
                 test_sample_merged.rename(columns={'unitprice_y': 'unitprice'}, inplace=True)
 
-            # Select only numeric columns for prediction
-            numeric_cols = test_sample_merged.select_dtypes(include=['int64', 'float64', 'int32', 'float32']).columns.tolist()
-            X = test_sample_merged[numeric_cols].values
+            # Recalculate derived price features to ensure consistency with the new unitprice
+            test_sample_merged['unitprice_vs_max'] = test_sample_merged['unitprice'] / test_sample_merged['product_max_price_all_time']
+            test_sample_merged.loc[test_sample_merged['product_max_price_all_time'] == 0, 'unitprice_vs_max'] = 0
+
+            test_sample_merged['unitprice_to_avg'] = test_sample_merged['unitprice'] / test_sample_merged['product_avg_quantity_last_month']
+            test_sample_merged.loc[test_sample_merged['product_avg_quantity_last_month'] == 0, 'unitprice_to_avg'] = 0
+
+            test_sample_merged['unitprice_squared'] = test_sample_merged['unitprice'] ** 2
+            test_sample_merged['unitprice_log'] = np.log1p(test_sample_merged['unitprice'])
+
+            # Select only numeric columns for prediction, in the exact column order expected by the model (matching X_test)
+            expected_cols = X_test.select_dtypes(include=['int64', 'float64', 'int32', 'float32']).columns.tolist()
+            X = test_sample_merged[expected_cols].values
 
             # load model
             try: load_model(stockcode=stockcode)
