@@ -1,3 +1,23 @@
+// Theme Toggle Initialization
+const themeToggleBtn = document.getElementById("theme-toggle");
+const storedTheme = localStorage.getItem("theme");
+
+if (storedTheme === "dark") {
+  document.body.classList.add("dark-theme");
+} else if (storedTheme === "light") {
+  document.body.classList.remove("dark-theme");
+} else if (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+  document.body.classList.add("dark-theme");
+}
+
+if (themeToggleBtn) {
+  themeToggleBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark-theme");
+    const theme = document.body.classList.contains("dark-theme") ? "dark" : "light";
+    localStorage.setItem("theme", theme);
+  });
+}
+
 const form = document.getElementById("predict-form");
 const statusEl = document.getElementById("status");
 const optimalPriceEl = document.getElementById("optimal_price");
