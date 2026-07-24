@@ -1,176 +1,189 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="ML Sales Prediction - Explore predicted sales across price ranges for stock codes" />
-    <meta name="theme-color" content="#5f7d75" />
-    <title>Sales Prediction | ML Dashboard</title>
-    <!-- Preconnect and import Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/static/ui.css" />
-  </head>
-  <body>
-    <main class="page">
-      <div class="page__grid">
-        <!-- Sidebar containing Title, Theme Toggle, and Input Form -->
-        <aside class="sidebar">
-          <div class="sidebar__header">
-            <div class="hero__badge">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
-                <path d="M2 17l10 5 10-5"></path>
-                <path d="M2 12l10 5 10-5"></path>
-              </svg>
-              <span>ML Engine Active</span>
-            </div>
-            
-            <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
-              <!-- Sun Icon -->
-              <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="5"></circle>
-                <line x1="12" y1="1" x2="12" y2="3"></line>
-                <line x1="12" y1="21" x2="12" y2="23"></line>
-                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                <line x1="1" y1="12" x2="3" y2="12"></line>
-                <line x1="21" y1="12" x2="23" y2="12"></line>
-                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-              </svg>
-              <!-- Moon Icon -->
-              <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-              </svg>
-            </button>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+    content="ML Sales Prediction - Explore predicted sales across price ranges for stock codes" />
+  <meta name="theme-color" content="#5f7d75" />
+  <title>Sales Prediction | ML Dashboard</title>
+  <!-- Preconnect and import Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/ui.css" />
+</head>
+
+<body>
+  <main class="page">
+    <div class="page__grid">
+      <!-- Sidebar containing Title, Theme Toggle, and Input Form -->
+      <aside class="sidebar">
+        <div class="sidebar__header">
+          <div class="hero__badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5"></path>
+              <path d="M2 12l10 5 10-5"></path>
+            </svg>
+            <span>ML Engine Active</span>
           </div>
 
-          <section class="hero" aria-labelledby="hero-title">
-            <h1 id="hero-title" class="hero__title">Price vs. Predicted Sales</h1>
-            <p class="hero__sub">
-              Explore predicted sales curves and discover the optimal price point for inventory items.
-            </p>
-          </section>
-
-          <section class="panel" aria-labelledby="form-heading">
-            <h2 id="form-heading" class="panel__title">Prediction Parameters</h2>
-            <form id="predict-form" class="form" novalidate>
-              <div class="form__fields">
-                <div class="field">
-                  <label for="stockcode" class="field__label">Stock Code</label>
-                  <input id="stockcode" class="field__input" type="text" placeholder="e.g., 85123A" autocomplete="off" required />
-                </div>
-                <div class="field">
-                  <label for="unitprice_min" class="field__label">Min Unit Price ($)</label>
-                  <input id="unitprice_min" class="field__input" type="number" min="0" step="0.01" placeholder="Auto" />
-                </div>
-                <div class="field">
-                  <label for="unitprice_max" class="field__label">Max Unit Price ($)</label>
-                  <input id="unitprice_max" class="field__input" type="number" min="0" step="0.01" placeholder="Auto" />
-                </div>
-                <div class="field">
-                  <label for="num_price_bins" class="field__label">Price Bins</label>
-                  <input id="num_price_bins" class="field__input" type="number" min="10" max="300" step="10" value="100" />
-                </div>
-              </div>
-
-              <div class="form__actions">
-                <button class="button" type="submit">
-                  <span>Run Prediction</span>
-                </button>
-                <div id="status" class="status" role="status" aria-live="polite">Ready</div>
-              </div>
-              <div id="error-box" class="error-box" role="alert" aria-live="assertive" hidden>
-                <div class="error-box__title">⚠️ Please fix the following issues:</div>
-                <ul id="error-list" class="error-box__list"></ul>
-              </div>
-            </form>
-          </section>
-        </aside>
-
-        <!-- Content Area containing results, charts, and tables -->
-        <div class="content-area">
-          <section class="results" aria-labelledby="results-heading">
-            <h2 id="results-heading" class="visually-hidden">Prediction Results</h2>
-            
-            <div class="summary" role="region" aria-label="Summary statistics">
-              <div class="summary__card">
-                <div class="summary__label">Optimal Unit Price</div>
-                <div id="optimal_price" class="summary__value" aria-label="Optimal price value">—</div>
-              </div>
-              <div class="summary__card">
-                <div class="summary__label">Max Predicted Sales</div>
-                <div id="max_sales" class="summary__value" aria-label="Maximum sales value">—</div>
-              </div>
-              <div class="summary__card">
-                <div class="summary__label">Data Points</div>
-                <div id="rows_returned" class="summary__value" aria-label="Number of rows">0</div>
-              </div>
-            </div>
-
-            <div class="chart-panel">
-              <div class="chart-panel__header">
-                <h2 class="chart-panel__title">Prediction Curve</h2>
-                <p class="chart-panel__subtitle">Visual relationship of unit price vs. predicted sales revenue</p>
-              </div>
-              <div class="chart-panel__body">
-                <svg id="chart" viewBox="0 0 800 300" role="img" aria-label="Line chart showing price vs predicted sales relationship" preserveAspectRatio="xMidYMid meet">
-                  <rect x="0" y="0" width="800" height="300" class="chart__bg"></rect>
-                  <g id="chart-grid"></g>
-                  <polyline id="chart-line" class="chart__line" points=""></polyline>
-                  <g id="chart-points"></g>
-                </svg>
-              </div>
-            </div>
-
-            <div class="table-panel">
-              <div class="table-panel__header">
-                <h2 class="table-panel__title">Top Predicted Sales</h2>
-                <p class="table-panel__subtitle">Top 10 evaluated unit prices sorted by predicted revenue</p>
-              </div>
-              <div class="table-panel__body">
-                <table class="table">
-                  <thead>
-                    <tr>
-                      <th scope="col">Unit Price</th>
-                      <th scope="col">Quantity (Median)</th>
-                      <th scope="col">Predicted Sales</th>
-                    </tr>
-                  </thead>
-                  <tbody id="table-body">
-                    <tr>
-                      <td colspan="3" class="table__empty">Run a prediction to see results</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
+          <button id="theme-toggle" class="theme-toggle" aria-label="Toggle dark mode" title="Toggle theme">
+            <!-- Sun Icon -->
+            <svg class="sun-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <!-- Moon Icon -->
+            <svg class="moon-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
         </div>
+
+        <section class="hero" aria-labelledby="hero-title">
+          <h1 id="hero-title" class="hero__title">Price vs. Predicted Sales</h1>
+          <p class="hero__sub">
+            Explore predicted sales curves and discover the optimal price point for inventory items.
+          </p>
+        </section>
+
+        <section class="panel" aria-labelledby="form-heading">
+          <h2 id="form-heading" class="panel__title">Prediction Parameters</h2>
+          <form id="predict-form" class="form" novalidate>
+            <div class="form__fields">
+              <div class="field">
+                <label for="stockcode" class="field__label">Stock Code</label>
+                <input id="stockcode" class="field__input" type="text" placeholder="e.g., 85123A" autocomplete="off"
+                  required />
+              </div>
+              <div class="field">
+                <label for="unitprice_min" class="field__label">Min Unit Price ($)</label>
+                <input id="unitprice_min" class="field__input" type="number" min="0" step="0.01" placeholder="Auto" />
+              </div>
+              <div class="field">
+                <label for="unitprice_max" class="field__label">Max Unit Price ($)</label>
+                <input id="unitprice_max" class="field__input" type="number" min="0" step="0.01" placeholder="Auto" />
+              </div>
+              <div class="field">
+                <label for="num_price_bins" class="field__label">Price Bins</label>
+                <input id="num_price_bins" class="field__input" type="number" min="10" max="300" step="10"
+                  value="100" />
+              </div>
+            </div>
+
+            <div class="form__actions">
+              <button class="button" type="submit">
+                <span>Run Prediction</span>
+              </button>
+              <div id="status" class="status" role="status" aria-live="polite">Ready</div>
+            </div>
+            <div id="error-box" class="error-box" role="alert" aria-live="assertive" hidden>
+              <div class="error-box__title">⚠️ Please fix the following issues:</div>
+              <ul id="error-list" class="error-box__list"></ul>
+            </div>
+          </form>
+        </section>
+      </aside>
+
+      <!-- Content Area containing results, charts, and tables -->
+      <div class="content-area">
+        <section class="results" aria-labelledby="results-heading">
+          <h2 id="results-heading" class="visually-hidden">Prediction Results</h2>
+
+          <div class="summary" role="region" aria-label="Summary statistics">
+            <div class="summary__card">
+              <div class="summary__label">Optimal Unit Price</div>
+              <div id="optimal_price" class="summary__value" aria-label="Optimal price value">—</div>
+            </div>
+            <div class="summary__card">
+              <div class="summary__label">Max Predicted Sales</div>
+              <div id="max_sales" class="summary__value" aria-label="Maximum sales value">—</div>
+            </div>
+            <div class="summary__card">
+              <div class="summary__label">Data Points</div>
+              <div id="rows_returned" class="summary__value" aria-label="Number of rows">0</div>
+            </div>
+          </div>
+
+          <div class="chart-panel">
+            <div class="chart-panel__header">
+              <h2 class="chart-panel__title">Prediction Curve</h2>
+              <p class="chart-panel__subtitle">Visual relationship of unit price vs. predicted sales revenue</p>
+            </div>
+            <div class="chart-panel__body">
+              <svg id="chart" viewBox="0 0 800 300" role="img"
+                aria-label="Line chart showing price vs predicted sales relationship"
+                preserveAspectRatio="xMidYMid meet">
+                <rect x="0" y="0" width="800" height="300" class="chart__bg"></rect>
+                <g id="chart-grid"></g>
+                <polyline id="chart-line" class="chart__line" points=""></polyline>
+                <g id="chart-points"></g>
+              </svg>
+            </div>
+          </div>
+
+          <div class="table-panel">
+            <div class="table-panel__header">
+              <h2 class="table-panel__title">Top Predicted Sales</h2>
+              <p class="table-panel__subtitle">Top 10 evaluated unit prices sorted by predicted revenue</p>
+            </div>
+            <div class="table-panel__body">
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Unit Price</th>
+                    <th scope="col">Quantity (Median)</th>
+                    <th scope="col">Predicted Sales</th>
+                  </tr>
+                </thead>
+                <tbody id="table-body">
+                  <tr>
+                    <td colspan="3" class="table__empty">Run a prediction to see results</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       </div>
-    </main>
+    </div>
+  </main>
 
-    <footer class="footer">
-      <span>API endpoint: <code>/v1/predict-price/&lt;stockcode&gt;</code></span>
-    </footer>
+  <footer class="footer">
+    <span>API endpoint: <code>/v1/predict-price/&lt;stockcode&gt;</code></span>
+    <span>Built by <a href="https://github.com/danishsyed-dev" target="_blank" rel="noopener noreferrer">Syed Danish Ali</a></span>
+  </footer>
 
-    <style>
-      .visually-hidden {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-      }
-    </style>
+  <style>
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
 
-    <script src="/static/ui.js"></script>
-  </body>
+  <script src="/static/ui.js"></script>
+</body>
+
 </html>
-

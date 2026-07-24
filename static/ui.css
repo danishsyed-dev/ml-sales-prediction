@@ -548,13 +548,27 @@ body {
 
 /* Footer Section */
 .footer {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
   font-size: 12px;
   color: var(--muted);
   padding: 32px 24px;
   border-top: 1px solid var(--border);
   margin-top: 64px;
   transition: border-color var(--transition-speed) var(--transition-easing);
+}
+
+.footer a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s var(--transition-easing);
+}
+
+.footer a:hover {
+  color: var(--text);
+  text-decoration: underline;
 }
 
 .footer code {
